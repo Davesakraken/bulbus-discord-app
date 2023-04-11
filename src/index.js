@@ -1,7 +1,8 @@
 import * as dotenv from "dotenv";
+import * as catApi from "./catApi.js"
 dotenv.config();
 import { Client, IntentsBitField, EmbedBuilder } from "discord.js";
-import { RegisterCommands } from "./register-commands.js"; 
+import { RegisterCommands } from "./register-commands.js";
 RegisterCommands();
 
 const client = new Client({
@@ -32,7 +33,7 @@ client.on("messageCreate", (message) => {
 client.on("interactionCreate", (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
-    if (interaction.commandName === "add") {
+    if (interaction.commandName === "sum") {
         const num1 = interaction.options.get("first-number").value;
         const num2 = interaction.options.get("second-number").value;
         interaction.reply(`The sum of the numbers provided is ${num1 + num2}`);
@@ -41,7 +42,7 @@ client.on("interactionCreate", (interaction) => {
     if (interaction.commandName === "poll") {
         const todaysDate = new Date().toDateString().slice(0, 15);
 
-        const emojis = ["❤️", "💛", "💚", "💙", "💜", "🧡"]
+        const emojis = ["❤️", "💛", "💚", "💙", "💜", "🧡"];
 
         const title = interaction.options.get("title", true)?.value;
         const discription = interaction.options.get("description", true)?.value;
@@ -52,38 +53,43 @@ client.on("interactionCreate", (interaction) => {
         const option5 = interaction.options.get("fourth-option", false)?.value;
         const option6 = interaction.options.get("fourth-option", false)?.value;
 
-        console.log(title)
-
         const embed = new EmbedBuilder()
             .setTitle(`${title}: ${todaysDate}`)
             .setDescription(discription)
             .setColor("Random")
-            .setFields(
-                { name: option1, value: emojis[0] },
-                { name: option2, value: emojis[1] },
-            );
+            .setFields({ name: option1, value: emojis[0] }, { name: option2, value: emojis[1] });
 
-            const additionalOptions = [
-                {name: option3, i: 2},
-                {name: option4, i: 3},
-                {name: option5, i: 4},
-                {name: option6, i: 5}
-            ];
+        const additionalOptions = [
+            { name: option3, i: 2 },
+            { name: option4, i: 3 },
+            { name: option5, i: 4 },
+            { name: option6, i: 5 },
+        ];
 
-            additionalOptions.forEach (option => {
-                if (option.name) {
-                    embed.addFields({name: option.name, value: emojis[option.i]})
-                }
-            });
+        additionalOptions.forEach((option) => {
+            if (option.name) {
+                embed.addFields({ name: option.name, value: emojis[option.i] });
+            }
+        });
 
-            const fields = embed.data.fields.length;
+        const fields = embed.data.fields.length;
 
-        interaction.reply({ embeds: [embed], fetchReply: true})
-        .then((m) => {
-          for (let i = 0; i < fields; i++) {
-            m.react(emojis[i])
-          }
-    })
-        
+        interaction.reply({ embeds: [embed], fetchReply: true }).then((m) => {
+            for (let i = 0; i < fields; i++) {
+                m.react(emojis[i]);
+            }
+        });
+    }
+
+    if (interaction.commandName === "cat") {
+        catApi.getCat().then((data) => {
+            interaction.reply(data.url.toString());
+        });
+    }
+
+    if (interaction.commandName === "dog") {
+        catApi.getDog().then((data) => {
+            interaction.reply(data.url.toString());
+        });
     }
 });
